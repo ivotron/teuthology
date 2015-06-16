@@ -89,7 +89,7 @@ class SELinux(Task):
                 denials = output.strip().split('\n')
                 log.debug("%s has %s denials", remote.name, len(denials))
             else:
-                denials = None
+                denials = []
             all_denials[remote.name] = denials
         return all_denials
 
