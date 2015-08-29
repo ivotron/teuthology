@@ -364,6 +364,26 @@ def check_ceph_data(ctx, config):
     """
     log.info('Checking for old /var/lib/ceph...')
 
+    if ctx.config.get('check_ceph_data_empty', False):
+        processes = ctx.cluster.run(
+            args=['find', '/var/lib/ceph', '-maxdepth', '1',
+                  run.Raw('|'), 'read', 'v'],
+            wait=False,
+        )
+        failed = False
+        for proc in processes:
+            try:
+                proc.wait()
+            except run.CommandFailedError:
+                log.error('Host %s has non-empty /var/lib/ceph.',
+                          proc.remote.shortname)
+                failed = True
+        if failed:
+            raise RuntimeError('Non-empty /var/lib/ceph detected, aborting.')
+            return
+        else:
+            return
+
     processes = ctx.cluster.run(
         args=['test', '!', '-e', '/var/lib/ceph'],
         wait=False,
